@@ -12,8 +12,11 @@ function App() {
   // -- Dialog props-- 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogNote, setDialogNote] = useState(null)
+  /*
+  useEffect(() => {
+      setNote(initialNote || baseNote);
+  }, [initialNote]);*/
 
-  
   // -- Database interaction functions --
   useEffect(() => {
     const getNotes = async () => {
@@ -38,13 +41,35 @@ function App() {
     getNotes()
   }, [])
 
-  const deleteNote = (entry) => {
+  const deleteNote = async (entry) => {
     // Code for DELETE here
+    const url = `http://localhost:4000/deleteNote/${entry._id}`;
+
+    try {
+      const response = await fetch(url, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Failed to delete the note');
+      }
+
+      setNotes(prevNotes => prevNotes.filter(note => note._id !== entry._id));
+    } catch (error) {
+      console.error("Error deleting the note:", error);
+    }
+
+
   }
 
-  const deleteAllNotes = () => {
-    // Code for DELETE all notes here
-  }
+  const deleteAllNotes = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/deleteAllNotes", { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Failed to delete all notes');
+      }
+      setNotes([]); // Clears the notes from state, updating the UI
+    } catch (error) {
+      console.error("Error deleting all notes:", error);
+    }
+  };
 
   
   // -- Dialog functions --
@@ -74,15 +99,42 @@ function App() {
 
   const deleteNoteState = () => {
     // Code for modifying state after DELETE here
+
   }
 
   const deleteAllNotesState = () => {
     // Code for modifying state after DELETE all here
   }
 
-  const patchNoteState = (_id, title, content) => {
-    // Code for modifying state after PATCH here
-  }
+  const patchNoteState = async (id, title, content) => {
+    try {
+      const response = await fetch(`http://localhost:4000/patchNote/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, content }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update the note');
+      }
+  
+
+      setNotes(prevNotes =>
+        prevNotes.map(note =>
+          note._id === id ? { ...note, title, content } : note
+        )
+      );
+      closeDialog(); 
+    } catch (error) {
+      console.error("Error updating the note:", error);
+
+    }
+  };
+  
+
+  
 
   return (
     <div className="App">

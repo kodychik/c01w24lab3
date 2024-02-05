@@ -78,6 +78,16 @@ app.post("/postNote", express.json(), async (req, res) => {
     }
   });
 
+app.delete("/deleteAllNotes", async (req, res) => {
+  try {
+    const collection = db.collection(COLLECTIONS.notes);
+    await collection.deleteMany({});
+    res.json({ message: "All notes deleted successfully." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Delete a note
 app.delete("/deleteNote/:noteId", express.json(), async (req, res) => {
   try {
@@ -145,3 +155,32 @@ app.patch("/patchNote/:noteId", express.json(), async (req, res) => {
     res.status(500).json({error: error.message})
   }
 })
+/*
+app.patch("/patchNote/:noteId", express.json(), async (req, res) => {
+  try {
+    const noteId = req.params.noteId;
+    if (!ObjectId.isValid(noteId)) {
+      return res.status(400).json({ error: "Invalid note ID." });
+    }
+
+    const { title, content } = req.body;
+    if (!title && !content) {
+      return res.status(400).json({ error: "Must have at least one of title or content." });
+    }
+
+    const collection = db.collection(COLLECTIONS.notes);
+    const data = await collection.updateOne(
+      { _id: new ObjectId(noteId) },
+      {
+        $set: { ...(title && { title }), ...(content && { content }) },
+      }
+    );
+
+    if (data.matchedCount === 0) {
+      return res.status(404).json({ error: "Unable to find note with given ID." });
+    }
+    res.json({ response: `Document with ID ${noteId} patched.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});*/
